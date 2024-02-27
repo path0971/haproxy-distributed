@@ -1,0 +1,14 @@
+# 첫 번째 단계: Java 17을 사용하여 Maven 빌드를 수행
+FROM maven:3.6.3-openjdk-17 AS MAVEN_TOOL_CHAIN_CONTAINER
+COPY src /tmp/src
+COPY pom.xml /tmp/
+WORKDIR /tmp/
+RUN mvn package
+RUN ls -la /tmp/target
+
+# 두 번째 단계: 빌드된 JAR 파일을 Java 17 런타임 컨테이너로 복사
+FROM openjdk:17
+COPY --from=MAVEN_TOOL_CHAIN_CONTAINER /tmp/target/webapp-1.0-SNAPSHOT-jar-with-dependencies.jar /app/
+WORKDIR /app/
+ENTRYPOINT ["java","-jar", "webapp-1.0-SNAPSHOT-jar-with-dependencies.jar"]
+CMD ["80", "Server Name"]
